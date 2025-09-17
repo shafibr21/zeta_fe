@@ -1,86 +1,100 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export interface User {
   id: number;
   name: string;
+  username: string;
   email: string;
-  role: string;
-  status: "active" | "inactive";
-  avatar?: string;
-  createdAt: string;
+  address: {
+    street: string;
+    suite: string;
+    city: string;
+    zipcode: string;
+    geo: {
+      lat: string;
+      lng: string;
+    };
+  };
+  phone: string;
+  website: string;
+  company: {
+    name: string;
+    catchPhrase: string;
+    bs: string;
+  };
 }
 
-// Mock user data
-const mockUsers: User[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "Admin",
-    status: "active",
-    createdAt: "2024-01-15T10:30:00Z",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    role: "User",
-    status: "active",
-    createdAt: "2024-02-20T14:15:00Z",
-  },
-  {
-    id: 3,
-    name: "Mike Johnson",
-    email: "mike.johnson@example.com",
-    role: "Moderator",
-    status: "inactive",
-    createdAt: "2024-03-10T09:45:00Z",
-  },
-  {
-    id: 4,
-    name: "Sarah Wilson",
-    email: "sarah.wilson@example.com",
-    role: "User",
-    status: "active",
-    createdAt: "2024-03-25T16:20:00Z",
-  },
-  {
-    id: 5,
-    name: "David Brown",
-    email: "david.brown@example.com",
-    role: "Admin",
-    status: "active",
-    createdAt: "2024-04-05T11:10:00Z",
-  },
-];
+const fetchUsers = async (): Promise<User[]> => {
+  const response = await fetch('https://jsonplaceholder.typicode.com/users');
+  if (!response.ok) {
+    throw new Error('Failed to fetch users');
+  }
+  return response.json();
+};
 
-export interface UseUsersResult {
-  data: User[] | undefined;
-  isLoading: boolean;
-  error: string | null;
+
+async function fetchUserById(id: string | number): Promise<User> {
+  const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+  if (!res.ok) throw new Error('Failed to fetch user');
+  return res.json();
 }
 
-export const useUsers = (): UseUsersResult => {
-  const [data, setData] = useState<User[] | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const useUsers = () => {
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export function useUser(id?: string | number) {
+  const qc = useQueryClient();
+
+  return useQuery({
+    queryKey: ['user', String(id)],
+    enabled: id != null && String(id).trim().length > 0,
+    queryFn: async () => {
+      // 1) Try to serve from the users list cache
+      const list = qc.getQueryData<User[]>(['users']);
+      const cached = list?.find(u => String(u.id) === String(id));
+      if (cached) return cached;
+
+      // 2) Fall back to fetching by id
+      return fetchUserById(id as string | number);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export const useFilteredUsers = (searchTerm: string) => {
+  const { data: users, ...query } = useUsers();
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    // Simulate API call delay
-    const timer = setTimeout(() => {
-      try {
-        setData(mockUsers);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch users");
-        setData(undefined);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1000);
+    if (!users) {
+      setFilteredUsers([]);
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, []);
+    if (!searchTerm.trim()) {
+      setFilteredUsers(users);
+      return;
+    }
 
-  return { data, isLoading, error };
+    const filtered = users.filter(user => 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.company.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    setFilteredUsers(filtered);
+  }, [users, searchTerm]);
+
+  return {
+    ...query,
+    data: filteredUsers,
+    totalUsers: users?.length || 0
+  };
 };
