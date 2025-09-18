@@ -1,46 +1,91 @@
 "use client";
 
-import { useUsers, User } from "@/hooks/useUsers";
-import { useState } from "react";
-import Link from "next/link";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Users } from "lucide-react";
+import ResponsiveTable from "@/components/ui/responsive-table";
+import AnimatedModal from "@/components/ui/animated-modal";
+import UserDetailsModal from "@/components/user-detail/UserDetailsModal";
+import { useUsers, User } from "@/hooks/useUsers";
 import SearchBar from "@/components/ui/search-bar";
-import Pagination from "@/components/ui/pagination";
-import {
-  Users,
-  ArrowRight,
-  Mail,
-  Phone,
-  Globe,
-  MapPin,
-  Building,
-} from "lucide-react";
+
+const COLUMNS = [
+  {
+    key: "name",
+    label: "Name",
+    render: (value: string, row: User) => (
+      <div className="flex items-center space-x-3">
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          transition={{ type: "spring", stiffness: 150 }}
+        >
+          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold ring-2 ring-purple-500/20 ring-offset-2 ring-offset-gray-900">
+            {value?.charAt(0).toUpperCase()}
+          </div>
+        </motion.div>
+        <div>
+          <div className="text-white font-medium group-hover:text-purple-300 transition-colors">
+            {value}
+          </div>
+          <div className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors">
+            @{row.username}
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "email",
+    label: "Email",
+    render: (value: string) => (
+      <div className="text-gray-300 group-hover:text-white transition-colors">
+        {value}
+      </div>
+    ),
+  },
+  {
+    key: "companyName",
+    label: "Company",
+    render: (value: string) => (
+      <div className="text-gray-300 group-hover:text-purple-300 transition-colors font-medium">
+        {value}
+      </div>
+    ),
+  },
+];
 
 export default function UsersPage() {
-  const { data: users, isLoading } = useUsers();
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 6;
 
+  const { data: users, isLoading, error } = useUsers();
+
+  const handleRowClick = (user: User) => {
+    // Find the original user data from the users array instead of using formatted data
+    const originalUser = users?.find((u) => u.id === user.id) || user;
+    setSelectedUser(originalUser);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  // Filter users based on search term
   const filteredUsers =
     users?.filter(
-      (u: User) =>
-        u.name.toLowerCase().includes(search.toLowerCase()) ||
-        u.email.toLowerCase().includes(search.toLowerCase()) ||
-        u.username.toLowerCase().includes(search.toLowerCase())
-    ) ?? [];
+      (user) =>
+        user.name.toLowerCase().includes(search.toLowerCase()) ||
+        user.email.toLowerCase().includes(search.toLowerCase()) ||
+        user.company.name.toLowerCase().includes(search.toLowerCase())
+    ) || [];
 
-  // Pagination
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-  const startIndex = (currentPage - 1) * usersPerPage;
-  const paginatedUsers = filteredUsers.slice(
-    startIndex,
-    startIndex + usersPerPage
-  );
+  const formatRowData = (user: User) => ({
+    ...user,
+    companyName: user.company.name, // Add a separate field for table display
+  });
 
   // Animation variants
   const containerVariants = {
@@ -49,81 +94,36 @@ export default function UsersPage() {
       opacity: 1,
       transition: {
         duration: 0.6,
-        staggerChildren: 0.1,
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
       },
     },
-  };
+  } as const;
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { y: 20, opacity: 0 },
     visible: {
-      opacity: 1,
       y: 0,
+      opacity: 1,
       transition: {
-        duration: 0.8,
         type: "spring" as const,
         stiffness: 100,
+        damping: 12,
       },
     },
-  };
+  } as const;
 
-  const cardVariants = {
-    hidden: {
-      opacity: 0,
-      y: 80,
-      rotateY: 15,
-      scale: 0.8,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      rotateY: 0,
-      scale: 1,
-      transition: {
-        duration: 1,
-        type: "spring" as const,
-        stiffness: 100,
-      },
-    },
-  };
-
-  const createSparkles = () => {
-    return Array.from({ length: 6 }, (_, i) => (
-      <motion.div
-        key={i}
-        className="absolute w-1 h-1 bg-purple-400 rounded-full pointer-events-none"
-        style={{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-        }}
-        initial={{ scale: 0, opacity: 1 }}
-        animate={{ scale: 1.5, opacity: 0 }}
-        transition={{
-          duration: 0.6,
-          ease: "easeOut",
-        }}
-      />
-    ));
-  };
-
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-6 w-16" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="p-6 bg-gray-900/50 border-gray-800">
-              <Skeleton className="h-6 w-32 mb-4" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-1/2" />
-            </Card>
-          ))}
-        </div>
-      </div>
+      <motion.div
+        className="p-6"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <div className="text-red-400 text-xl mb-4">Failed to load users</div>
+        <p className="text-gray-400">Error: {error.message}</p>
+      </motion.div>
     );
   }
 
@@ -133,7 +133,6 @@ export default function UsersPage() {
       initial="hidden"
       animate="visible"
       className="p-6 space-y-6"
-      style={{ perspective: "1000px" }}
     >
       {/* Header */}
       <motion.div
@@ -142,7 +141,7 @@ export default function UsersPage() {
       >
         <div className="flex items-center space-x-3">
           <motion.div
-            className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center"
+            className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center"
             animate={{
               y: [-5, 0, -5],
             }}
@@ -162,7 +161,7 @@ export default function UsersPage() {
             {filteredUsers.length} items
           </span>
           <span>/</span>
-          <span>{Math.ceil(filteredUsers.length / usersPerPage)} page(s)</span>
+          <span>All users</span>
         </div>
       </motion.div>
 
@@ -170,145 +169,24 @@ export default function UsersPage() {
       <SearchBar
         value={search}
         onChange={setSearch}
-        placeholder="Search users..."
+        placeholder="Search users by name, email, or company..."
+        focusColor="purple"
       />
 
-      {/* Users Grid */}
-      <motion.div
-        variants={containerVariants}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {paginatedUsers.map((user: User, index: number) => (
-          <Link key={user.id} href={`/dashboard/users/${user.id}`}>
-            <motion.div
-              variants={cardVariants}
-              whileHover={{
-                scale: 1.05,
-                y: -10,
-                transition: { type: "spring", stiffness: 300 },
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Card className="relative p-6 bg-gray-900/50 border-gray-800 hover:bg-gray-800/50 transition-all duration-300 cursor-pointer backdrop-blur-sm group overflow-hidden">
-                {/* User Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    {/* Avatar */}
-                    <motion.div
-                      className="relative"
-                      whileHover={{
-                        scale: 1.1,
-                        rotate: 5,
-                        transition: { type: "spring", stiffness: 300 },
-                      }}
-                    >
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage
-                          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
-                          alt={user.name}
-                        />
-                        <AvatarFallback className="text-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                          {user.name
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                    </motion.div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white group-hover:text-purple-300 transition-colors">
-                        {user.name}
-                      </h3>
-                      <p className="text-sm text-gray-400">@{user.username}</p>
-                    </div>
-                  </div>
-                  <motion.div
-                    whileHover={{
-                      x: 5,
-                      scale: 1.2,
-                      transition: { type: "spring", stiffness: 300 },
-                    }}
-                  >
-                    <ArrowRight className="h-4 w-4 text-gray-500 group-hover:text-purple-400 transition-all duration-300" />
-                  </motion.div>
-                </div>
-
-                {/* User Info */}
-                <div className="space-y-3">
-                  <motion.div
-                    className="flex items-center space-x-2 text-sm"
-                    whileHover={{ x: 4 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <Mail className="h-4 w-4 text-purple-400" />
-                    <span className="text-gray-300 truncate">{user.email}</span>
-                  </motion.div>
-                  <motion.div
-                    className="flex items-center space-x-2 text-sm"
-                    whileHover={{ x: 4 }}
-                    transition={{ type: "spring", stiffness: 300, delay: 0.05 }}
-                  >
-                    <Phone className="h-4 w-4 text-blue-400" />
-                    <span className="text-gray-300">{user.phone}</span>
-                  </motion.div>
-                  <motion.div
-                    className="flex items-center space-x-2 text-sm"
-                    whileHover={{ x: 4 }}
-                    transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-                  >
-                    <Globe className="h-4 w-4 text-green-400" />
-                    <span className="text-gray-300 truncate">
-                      {user.website}
-                    </span>
-                  </motion.div>
-                  <motion.div
-                    className="flex items-center space-x-2 text-sm"
-                    whileHover={{ x: 4 }}
-                    transition={{ type: "spring", stiffness: 300, delay: 0.15 }}
-                  >
-                    <MapPin className="h-4 w-4 text-orange-400" />
-                    <span className="text-gray-300">{user.address.city}</span>
-                  </motion.div>
-                </div>
-
-                {/* Company Badge */}
-                <motion.div
-                  className="mt-4 pt-4 border-t border-gray-800 group-hover:border-purple-800 transition-colors duration-300"
-                  whileHover={{ y: -2 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Building className="h-3 w-3 text-gray-500 group-hover:text-purple-400 transition-colors duration-300" />
-                    <span className="text-xs text-gray-500 group-hover:text-purple-300 transition-colors duration-300">
-                      {user.company.name}
-                    </span>
-                  </div>
-                  <p className="text-xs text-purple-400 mt-1 italic group-hover:text-purple-300 transition-colors duration-300">
-                    &ldquo;{user.company.catchPhrase}&rdquo;
-                  </p>
-                </motion.div>
-
-                {/* Sparkles on hover */}
-                <motion.div
-                  className="absolute inset-0 pointer-events-none"
-                  whileHover={{ opacity: 1 }}
-                  initial={{ opacity: 0 }}
-                >
-                  {createSparkles()}
-                </motion.div>
-              </Card>
-            </motion.div>
-          </Link>
-        ))}
+      {/* Table Section */}
+      <motion.div variants={itemVariants} className="relative">
+        <ResponsiveTable
+          data={filteredUsers ? filteredUsers.map(formatRowData) : []}
+          columns={COLUMNS}
+          onRowClick={handleRowClick}
+          isLoading={isLoading}
+        />
       </motion.div>
 
-      {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        theme="purple"
-      />
+      {/* Enhanced Modal */}
+      <AnimatedModal isOpen={isModalOpen} onClose={handleCloseModal} size="lg">
+        {selectedUser && <UserDetailsModal user={selectedUser} />}
+      </AnimatedModal>
     </motion.div>
   );
 }

@@ -117,7 +117,7 @@ export default function DashboardLayout({
     },
     collapsed: {
       rotate: 180,
-      scale: 1.1,
+      scale: 1,
       transition: {
         duration: 0.3,
         type: "spring" as const,
@@ -201,36 +201,42 @@ export default function DashboardLayout({
         }}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center p-4 min-h-[72px]">
-          <motion.div
-            className="flex items-center space-x-3 flex-1"
-            variants={logoVariants}
-            animate={sidebarOpen ? "expanded" : "collapsed"}
-          >
+        <div
+          className={`flex items-center p-4 min-h-[72px] ${
+            !sidebarOpen ? "justify-center" : ""
+          }`}
+        >
+          {sidebarOpen && (
             <motion.div
-              className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center"
-              whileHover={{
-                scale: 1.1,
-                rotate: 5,
-                transition: { type: "spring", stiffness: 300 },
-              }}
+              className="flex items-center space-x-3 flex-1"
+              variants={logoVariants}
+              animate={sidebarOpen ? "expanded" : "collapsed"}
             >
-              <LayoutDashboard className="h-5 w-5 text-white" />
+              <motion.div
+                className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center"
+                whileHover={{
+                  scale: 1.1,
+                  rotate: 5,
+                  transition: { type: "spring", stiffness: 300 },
+                }}
+              >
+                <LayoutDashboard className="h-5 w-5 text-white" />
+              </motion.div>
+              <AnimatePresence>
+                {sidebarOpen && (
+                  <motion.span
+                    className="text-xl font-bold text-white"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Dashboard
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.div>
-            <AnimatePresence>
-              {sidebarOpen && (
-                <motion.span
-                  className="text-xl font-bold text-white"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  Dashboard
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          )}
 
           <motion.button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -254,7 +260,7 @@ export default function DashboardLayout({
               ) : (
                 <motion.div
                   key="menu"
-                  initial={{ rotate: -90, opacity: 0 }}
+                  initial={{ rotate: 0, opacity: 0 }}
                   animate={{ rotate: 0, opacity: 1 }}
                   exit={{ rotate: 90, opacity: 0 }}
                   transition={{ duration: 0.2 }}
