@@ -17,6 +17,22 @@ const PostsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
 
+  // Add sparkle CSS animation
+  React.useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes sparkle {
+        0% { transform: scale(0) rotate(0deg); opacity: 1; }
+        50% { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
+        100% { transform: scale(0) rotate(360deg); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   // Filter posts based on search term
   const filteredPosts =
     posts?.filter(
@@ -45,7 +61,8 @@ const PostsPage = () => {
       opacity: 1,
       transition: {
         duration: 0.6,
-        staggerChildren: 0.1,
+        staggerChildren: 0.15, // Increased stagger delay
+        delayChildren: 0.2,
       },
     },
   };
@@ -66,19 +83,66 @@ const PostsPage = () => {
   const cardVariants = {
     hidden: {
       opacity: 0,
-      y: 80,
-      rotateY: 15,
-      scale: 0.8,
+      y: 100,
+      rotateX: -15,
+      rotateY: 20,
+      scale: 0.6,
+      filter: "blur(10px)",
     },
-    visible: {
+    visible: (index: number) => ({
       opacity: 1,
       y: 0,
+      rotateX: 0,
       rotateY: 0,
       scale: 1,
+      filter: "blur(0px)",
       transition: {
-        duration: 1,
+        duration: 0.8,
+        delay: index * 0.2, // Staggered delay based on index
         type: "spring" as const,
         stiffness: 100,
+        damping: 15,
+      },
+    }),
+    hover: {
+      y: -5,
+      rotateY: 5,
+      scale: 1.05,
+      filter: "brightness(1.1)",
+      transition: {
+        duration: 2,
+        type: "spring" as const,
+        stiffness: 150,
+      },
+    },
+    tap: {
+      scale: 0.95,
+      rotateY: -5,
+      transition: {
+        duration: 0.1,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -50,
+      rotateX: 15,
+      scale: 0.8,
+      filter: "blur(5px)",
+      transition: {
+        duration: 0.4,
+      },
+    },
+  };
+
+  const floatingVariants = {
+    float: {
+      y: [-5, 5, -5],
+      rotateZ: [-1, 1, -1],
+      transition: {
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: Math.random() * 2, // Random delay for each card
       },
     },
   };
@@ -177,8 +241,42 @@ const PostsPage = () => {
       >
         <AnimatePresence mode="popLayout">
           {paginatedPosts.map((post, index) => (
-            <motion.div key={post.id} variants={cardVariants}>
-              <PostCard post={post} index={index} />
+            <motion.div
+              key={post.id}
+              custom={index}
+              variants={cardVariants}
+              initial="hidden"
+              animate={["visible", "float"]}
+              whileHover="hover"
+              whileTap="tap"
+              exit="exit"
+              style={{
+                transformStyle: "preserve-3d",
+              }}
+              onHoverStart={() => {
+                // Add sparkle effect on hover
+                const sparkles = document.querySelectorAll(".sparkle");
+                sparkles.forEach((sparkle) => sparkle.remove());
+
+                const card = document.getElementById(`post-card-${post.id}`);
+                if (card) {
+                  for (let i = 0; i < 8; i++) {
+                    const sparkle = document.createElement("div");
+                    sparkle.className =
+                      "sparkle absolute w-1 h-1 bg-blue-400 rounded-full pointer-events-none";
+                    sparkle.style.left = Math.random() * 100 + "%";
+                    sparkle.style.top = Math.random() * 100 + "%";
+                    sparkle.style.animation = `sparkle 0.6s ease-out forwards`;
+                    card.appendChild(sparkle);
+
+                    setTimeout(() => sparkle.remove(), 600);
+                  }
+                }
+              }}
+            >
+              <div id={`post-card-${post.id}`} className="relative">
+                <PostCard post={post} index={index} />
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
