@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, BookOpen, User, Calendar } from "lucide-react";
+import { ArrowLeft, BookOpen, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Post {

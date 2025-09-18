@@ -39,10 +39,6 @@ const PostActions: React.FC<PostActionsProps> = ({
     }
   };
 
-  const handleShare = () => {
-    setShowShareMenu(!showShareMenu);
-  };
-
   const handleComment = () => {
     if (onComment) {
       onComment();

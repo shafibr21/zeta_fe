@@ -13,7 +13,6 @@ import {
   Building,
   User,
   ExternalLink,
-  MessageCircle,
 } from "lucide-react";
 
 interface User {

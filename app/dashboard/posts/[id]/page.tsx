@@ -4,7 +4,6 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePost } from "@/hooks/usePosts";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useRouter, useParams } from "next/navigation";
 import PostDetailHeader from "@/components/posts/PostDetailHeader";
 import PostContent from "@/components/posts/PostContent";

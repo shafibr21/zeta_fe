@@ -190,7 +190,7 @@ const Features: React.FC = () => {
         transition={{ duration: 0.5, delay: 0.3 }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        {features.map((feature, index) => (
+        {features.map((feature) => (
           <FeatureCard
             key={feature.title}
             title={feature.title}

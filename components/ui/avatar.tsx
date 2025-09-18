@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React from "react";
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -41,12 +42,12 @@ export const AvatarImage: React.FC<AvatarImageProps> = ({
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
-      className={`aspect-square h-full w-full object-cover ${className}`}
+      fill
+      className={`aspect-square object-cover ${className}`}
       onError={() => setImageError(true)}
-      {...props}
     />
   );
 };

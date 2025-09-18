@@ -160,7 +160,7 @@ const StatsGrid: React.FC<StatsGridProps> = ({ users, isLoading }) => {
       transition={{ duration: 0.5 }}
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
     >
-      {stats.map((stat, index) => (
+      {stats.map((stat) => (
         <StatCard
           key={stat.title}
           title={stat.title}

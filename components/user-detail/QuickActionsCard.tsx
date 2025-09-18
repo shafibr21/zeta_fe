@@ -108,7 +108,7 @@ const QuickActionsCard: React.FC<QuickActionsCardProps> = ({ user }) => {
             initial="hidden"
             animate="visible"
           >
-            {actions.map((action, index) => {
+            {actions.map((action) => {
               const Icon = action.icon;
               return (
                 <motion.div

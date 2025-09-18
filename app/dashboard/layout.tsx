@@ -142,28 +142,6 @@ export default function DashboardLayout({
     },
   };
 
-  const textVariants = {
-    expanded: {
-      opacity: 1,
-      x: 0,
-      display: "block",
-      transition: {
-        duration: 0.3,
-        delay: 0.2,
-      },
-    },
-    collapsed: {
-      opacity: 0,
-      x: -10,
-      transition: {
-        duration: 0.2,
-      },
-      transitionEnd: {
-        display: "none",
-      },
-    },
-  };
-
   const footerVariants = {
     expanded: {
       opacity: 1,

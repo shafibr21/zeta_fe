@@ -134,19 +134,6 @@ const PostsPage = () => {
     },
   };
 
-  const floatingVariants = {
-    float: {
-      y: [-5, 5, -5],
-      rotateZ: [-1, 1, -1],
-      transition: {
-        duration: 3,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay: Math.random() * 2, // Random delay for each card
-      },
-    },
-  };
-
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
