@@ -67,34 +67,3 @@ export function useUser(id?: string | number) {
   });
 }
 
-export const useFilteredUsers = (searchTerm: string) => {
-  const { data: users, ...query } = useUsers();
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    if (!users) {
-      setFilteredUsers([]);
-      return;
-    }
-
-    if (!searchTerm.trim()) {
-      setFilteredUsers(users);
-      return;
-    }
-
-    const filtered = users.filter(user => 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.company.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    setFilteredUsers(filtered);
-  }, [users, searchTerm]);
-
-  return {
-    ...query,
-    data: filteredUsers,
-    totalUsers: users?.length || 0
-  };
-};
