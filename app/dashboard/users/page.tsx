@@ -8,9 +8,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import SearchBar from "@/components/ui/search-bar";
+import Pagination from "@/components/ui/pagination";
 import {
   Users,
-  Search,
   ArrowRight,
   Mail,
   Phone,
@@ -143,7 +144,7 @@ export default function UsersPage() {
           <motion.div
             className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center"
             animate={{
-              y: [-10, 0, -10],
+              y: [-5, 0, -5],
             }}
             transition={{
               duration: 2,
@@ -154,6 +155,7 @@ export default function UsersPage() {
             <Users className="h-5 w-5 text-white" />
           </motion.div>
           <h1 className="text-2xl font-bold text-white">Users</h1>
+          <span className="text-gray-400"> User Management</span>
         </div>
         <div className="flex items-center space-x-2 text-gray-400">
           <span className="text-purple-400 font-semibold">
@@ -165,18 +167,11 @@ export default function UsersPage() {
       </motion.div>
 
       {/* Search */}
-      <motion.div variants={itemVariants} className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <motion.input
-          type="text"
-          placeholder="Search users..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all duration-300"
-          whileFocus={{ scale: 1.02 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        />
-      </motion.div>
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Search users..."
+      />
 
       {/* Users Grid */}
       <motion.div
@@ -308,47 +303,12 @@ export default function UsersPage() {
       </motion.div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <motion.div
-          variants={itemVariants}
-          className="flex items-center justify-center space-x-2 mt-8"
-        >
-          <Button
-            variant="ghost"
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="text-gray-400 hover:text-white hover:bg-gray-800"
-          >
-            ←
-          </Button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <Button
-              key={page}
-              variant={page === currentPage ? "default" : "ghost"}
-              onClick={() => setCurrentPage(page)}
-              className={
-                page === currentPage
-                  ? "bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-600/30"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
-              }
-            >
-              {page}
-            </Button>
-          ))}
-
-          <Button
-            variant="ghost"
-            onClick={() =>
-              setCurrentPage(Math.min(totalPages, currentPage + 1))
-            }
-            disabled={currentPage === totalPages}
-            className="text-gray-400 hover:text-white hover:bg-gray-800"
-          >
-            →
-          </Button>
-        </motion.div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        theme="purple"
+      />
     </motion.div>
   );
 }
