@@ -58,7 +58,7 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-500 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-gray-900 max-w-3xl mx-auto leading-relaxed">
             Experience the future of user management with stunning animations,
             real-time data, and beautiful modern design.
           </p>
