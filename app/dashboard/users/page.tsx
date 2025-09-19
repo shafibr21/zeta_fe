@@ -13,19 +13,19 @@ const COLUMNS = [
   {
     key: "name",
     label: "Name",
-    render: (value: string, row: User) => (
+    render: (value: unknown, row: User) => (
       <div className="flex items-center space-x-3">
         <motion.div
           whileHover={{ scale: 1.1, rotate: 5 }}
           transition={{ type: "spring", stiffness: 150 }}
         >
           <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold ring-2 ring-purple-500/20 ring-offset-2 ring-offset-gray-900">
-            {value?.charAt(0).toUpperCase()}
+            {String(value)?.charAt(0).toUpperCase()}
           </div>
         </motion.div>
         <div>
           <div className="text-white font-medium group-hover:text-purple-300 transition-colors">
-            {value}
+            {String(value)}
           </div>
           <div className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors">
             @{row.username}
@@ -37,18 +37,18 @@ const COLUMNS = [
   {
     key: "email",
     label: "Email",
-    render: (value: string) => (
+    render: (value: unknown) => (
       <div className="text-gray-300 group-hover:text-white transition-colors">
-        {value}
+        {String(value)}
       </div>
     ),
   },
   {
     key: "companyName",
     label: "Company",
-    render: (value: string) => (
+    render: (value: unknown) => (
       <div className="text-gray-300 group-hover:text-purple-300 transition-colors font-medium">
-        {value}
+        {String(value)}
       </div>
     ),
   },

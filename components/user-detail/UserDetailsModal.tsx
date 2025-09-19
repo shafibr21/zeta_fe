@@ -232,7 +232,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ user }) => {
             <motion.div variants={itemVariants}>
               <p className="text-sm text-gray-400">Motto</p>
               <p className="text-gray-300 italic">
-                "{user.company.catchPhrase}"
+                &ldquo;{user.company.catchPhrase}&rdquo;
               </p>
             </motion.div>
 

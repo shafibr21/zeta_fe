@@ -5,28 +5,30 @@ import { motion } from "framer-motion";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Building, Mail } from "lucide-react";
 
-interface TableColumn {
+interface TableColumn<T = Record<string, unknown>> {
   key: string;
   label: string;
-  render?: (value: any, row: any) => React.ReactNode;
+  render?: (value: unknown, row: T) => React.ReactNode;
   className?: string;
 }
 
-interface ResponsiveTableProps {
-  columns: TableColumn[];
-  data: any[];
-  onRowClick?: (row: any, index: number) => void;
+interface ResponsiveTableProps<T = Record<string, unknown>> {
+  columns: TableColumn<T>[];
+  data: T[];
+  onRowClick?: (row: T) => void;
   isLoading?: boolean;
   emptyMessage?: string;
 }
 
-const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
+const ResponsiveTable = <
+  T extends Record<string, unknown> & { id?: string | number }
+>({
   columns,
   data,
   onRowClick,
   isLoading = false,
   emptyMessage = "No data available",
-}) => {
+}: ResponsiveTableProps<T>) => {
   const tableVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -138,7 +140,7 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
           variants={headerVariants}
         >
           <div className="hidden md:grid md:grid-cols-3 gap-4 p-4">
-            {columns.map((column, index) => (
+            {columns.map((column) => (
               <div
                 key={column.key}
                 className={`text-sm font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent uppercase tracking-wider ${
@@ -153,9 +155,9 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
 
         {/* Table Body */}
         <div className="divide-y divide-gray-700/30">
-          {data.map((row, index) => (
+          {data.map((row) => (
             <motion.div
-              key={row.id || index}
+              key={row.id}
               variants={rowVariants}
               whileHover={{
                 scale: 1.02,
@@ -171,7 +173,7 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                   ? "hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-pink-500/10 hover:border-purple-500/20"
                   : ""
               } rounded-lg border border-transparent hover:shadow-lg hover:shadow-purple-500/10`}
-              onClick={() => onRowClick?.(row, index)}
+              onClick={() => onRowClick?.(row)}
               style={{
                 background: onRowClick
                   ? "linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.03) 50%, transparent 100%)"
@@ -184,7 +186,7 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                   <div key={column.key} className={column.className || ""}>
                     {column.render
                       ? column.render(row[column.key], row)
-                      : row[column.key]}
+                      : String(row[column.key] || "")}
                   </div>
                 ))}
               </div>
@@ -198,24 +200,32 @@ const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
                   >
                     <Avatar className="w-12 h-12 ring-2 ring-purple-500/20 ring-offset-2 ring-offset-gray-900">
                       <AvatarImage
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${row.name}`}
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${String(
+                          row.name || ""
+                        )}`}
                       />
                       <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">
-                        {row.name?.charAt(0).toUpperCase()}
+                        {String(row.name || "")
+                          .charAt(0)
+                          .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </motion.div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-white font-semibold truncate group-hover:text-purple-300 transition-colors">
-                      {row.name}
+                      {String(row.name || "")}
                     </h3>
                     <div className="flex items-center space-x-1 text-gray-400 text-sm group-hover:text-gray-300 transition-colors">
                       <Mail className="w-4 h-4" />
-                      <span className="truncate">{row.email}</span>
+                      <span className="truncate">
+                        {String(row.email || "")}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-1 text-gray-400 text-sm group-hover:text-gray-300 transition-colors">
                       <Building className="w-4 h-4" />
-                      <span className="truncate">{row.company?.name}</span>
+                      <span className="truncate">
+                        {String((row.company as { name?: string })?.name || "")}
+                      </span>
                     </div>
                   </div>
                 </div>

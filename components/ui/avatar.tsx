@@ -33,7 +33,6 @@ export const AvatarImage: React.FC<AvatarImageProps> = ({
   src,
   alt = "",
   className = "",
-  ...props
 }) => {
   const [imageError, setImageError] = React.useState(false);
 

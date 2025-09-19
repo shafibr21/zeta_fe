@@ -17,7 +17,6 @@ const PostActions: React.FC<PostActionsProps> = ({
   isLiked = false,
   viewCount = 127,
 }) => {
-  const [showShareMenu, setShowShareMenu] = useState(false);
   const [liked, setLiked] = useState(isLiked);
 
   const actionsVariants = {
